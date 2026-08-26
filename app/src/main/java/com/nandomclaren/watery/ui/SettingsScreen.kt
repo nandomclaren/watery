@@ -1,5 +1,6 @@
 package com.nandomclaren.watery.ui
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -52,13 +53,45 @@ fun SettingsScreen() {
     var goalText by remember { mutableStateOf("") }
     var glassText by remember { mutableStateOf("") }
 
+    val requestPermissionsContract = remember { healthConnectManager.createPermissionRequestContract() }
     val permissionLauncher = rememberLauncherForActivityResult(
-        contract = healthConnectManager.createPermissionRequestContract(),
-    ) {
+        contract = requestPermissionsContract,
+    ) { granted ->
         scope.launch {
             hasHealthConnectPermissions = healthConnectManager.hasAllPermissions()
             state = repository.syncAndGetState(healthConnectManager)
             WaterWidget().updateAll(context)
+            if (granted.isEmpty()) {
+                Toast.makeText(
+                    context,
+                    "Nenhuma permissão concedida. Abra o app Health Connect > Apps conectados > Watery para conceder manualmente.",
+                    Toast.LENGTH_LONG,
+                ).show()
+            }
+        }
+    }
+
+    fun openHealthConnectPermissions() {
+        try {
+            permissionLauncher.launch(healthConnectManager.permissions)
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                "Não foi possível abrir o Health Connect: ${e.message}",
+                Toast.LENGTH_LONG,
+            ).show()
+        }
+    }
+
+    fun openHealthConnectStore() {
+        try {
+            healthConnectManager.openHealthConnectInPlayStore()
+        } catch (e: Exception) {
+            Toast.makeText(
+                context,
+                "Não foi possível abrir a Play Store: ${e.message}",
+                Toast.LENGTH_LONG,
+            ).show()
         }
     }
 
@@ -147,13 +180,13 @@ fun SettingsScreen() {
                     when {
                         !healthConnectManager.isAvailable && !healthConnectManager.needsProviderUpdate -> {
                             Text("O Health Connect não está instalado neste aparelho.")
-                            Button(onClick = { healthConnectManager.openHealthConnectInPlayStore() }) {
+                            Button(onClick = { openHealthConnectStore() }) {
                                 Text("Instalar Health Connect")
                             }
                         }
                         healthConnectManager.needsProviderUpdate -> {
                             Text("O Health Connect precisa ser atualizado.")
-                            Button(onClick = { healthConnectManager.openHealthConnectInPlayStore() }) {
+                            Button(onClick = { openHealthConnectStore() }) {
                                 Text("Atualizar Health Connect")
                             }
                         }
@@ -162,7 +195,7 @@ fun SettingsScreen() {
                         }
                         else -> {
                             Text("Conceda permissão para sincronizar sua ingestão de água com o Health Connect.")
-                            Button(onClick = { permissionLauncher.launch(healthConnectManager.permissions) }) {
+                            Button(onClick = { openHealthConnectPermissions() }) {
                                 Text("Conectar ao Health Connect")
                             }
                         }
