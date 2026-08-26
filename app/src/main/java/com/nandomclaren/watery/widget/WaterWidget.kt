@@ -50,13 +50,37 @@ class WaterWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val repository = WaterPreferencesRepository(context)
         val healthConnectManager = HealthConnectManager(context)
-        val state = repository.syncAndGetState(healthConnectManager)
+        val result = try {
+            Result.success(repository.syncAndGetState(healthConnectManager))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
 
         provideContent {
             GlanceTheme {
-                WaterWidgetContent(state)
+                result.fold(
+                    onSuccess = { WaterWidgetContent(it) },
+                    onFailure = { WaterWidgetError(it) },
+                )
             }
         }
+    }
+}
+
+@Composable
+private fun WaterWidgetError(error: Throwable) {
+    Box(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(solid(DarkBackground))
+            .cornerRadius(24.dp)
+            .padding(12.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = "Erro: ${error::class.simpleName}: ${error.message}",
+            style = TextStyle(color = solid(White), fontSize = 11.sp),
+        )
     }
 }
 
