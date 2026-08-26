@@ -3,7 +3,6 @@ package com.nandomclaren.watery.widget
 import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
@@ -17,7 +16,6 @@ import androidx.glance.appwidget.provideContent
 import androidx.glance.background
 import androidx.glance.color.ColorProvider
 import androidx.glance.layout.Alignment
-import androidx.glance.layout.Arrangement
 import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
@@ -28,6 +26,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
+import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.nandomclaren.watery.data.HealthConnectManager
@@ -41,6 +40,10 @@ private val CupOutline = Color(0x33FFFFFF)
 private val CupFill = Color(0xFF2FA8E0)
 private val White = Color(0xFFFFFFFF)
 private val MutedWhite = Color(0xB3FFFFFF)
+private val ButtonTrack = Color(0x1FFFFFFF)
+
+/** This widget always renders with a fixed dark palette, so day and night resolve the same. */
+private fun solid(color: Color): ColorProvider = ColorProvider(day = color, night = color)
 
 class WaterWidget : GlanceAppWidget() {
 
@@ -62,7 +65,7 @@ private fun WaterWidgetContent(state: WaterUiState) {
     Box(
         modifier = GlanceModifier
             .fillMaxSize()
-            .background(ColorProvider(DarkBackground))
+            .background(solid(DarkBackground))
             .cornerRadius(24.dp)
             .padding(16.dp)
             .clickable(actionRunCallback<AddGlassAction>()),
@@ -75,7 +78,7 @@ private fun WaterWidgetContent(state: WaterUiState) {
                 Text(
                     text = "H2O",
                     style = TextStyle(
-                        color = ColorProvider(White),
+                        color = solid(White),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
                     ),
@@ -83,14 +86,14 @@ private fun WaterWidgetContent(state: WaterUiState) {
                 Spacer(modifier = GlanceModifier.defaultWeight())
                 Box(
                     modifier = GlanceModifier
-                        .background(ColorProvider(BadgeRed))
+                        .background(solid(BadgeRed))
                         .cornerRadius(12.dp)
                         .padding(horizontal = 10.dp, vertical = 4.dp),
                 ) {
                     Text(
                         text = "${state.drunkGlasses}/${state.goalGlasses}",
                         style = TextStyle(
-                            color = ColorProvider(White),
+                            color = solid(White),
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
                         ),
@@ -100,23 +103,23 @@ private fun WaterWidgetContent(state: WaterUiState) {
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            Row(
+            Box(
                 modifier = GlanceModifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
+                contentAlignment = Alignment.Center,
             ) {
                 WaterCup(drunkGlasses = state.drunkGlasses, goalGlasses = state.goalGlasses)
             }
 
             Spacer(modifier = GlanceModifier.height(8.dp))
 
-            Row(
+            Box(
                 modifier = GlanceModifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
+                contentAlignment = Alignment.Center,
             ) {
                 Text(
                     text = formatLiters(state.drunkLiters),
                     style = TextStyle(
-                        color = ColorProvider(White),
+                        color = solid(White),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                     ),
@@ -129,21 +132,21 @@ private fun WaterWidgetContent(state: WaterUiState) {
                 Box(
                     modifier = GlanceModifier
                         .size(28.dp)
-                        .background(ColorProvider(Color(0x1FFFFFFF)))
+                        .background(solid(ButtonTrack))
                         .cornerRadius(14.dp)
                         .clickable(actionRunCallback<UndoGlassAction>()),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
                         text = "↺",
-                        style = TextStyle(color = ColorProvider(MutedWhite), fontSize = 14.sp),
+                        style = TextStyle(color = solid(MutedWhite), fontSize = 14.sp),
                     )
                 }
                 Spacer(modifier = GlanceModifier.defaultWeight())
                 Box(
                     modifier = GlanceModifier
                         .size(28.dp)
-                        .background(ColorProvider(CupFill))
+                        .background(solid(CupFill))
                         .cornerRadius(14.dp)
                         .clickable(actionRunCallback<AddGlassAction>()),
                     contentAlignment = Alignment.Center,
@@ -151,7 +154,7 @@ private fun WaterWidgetContent(state: WaterUiState) {
                     Text(
                         text = "+",
                         style = TextStyle(
-                            color = ColorProvider(White),
+                            color = solid(White),
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
                         ),
@@ -179,7 +182,7 @@ private fun WaterCup(drunkGlasses: Int, goalGlasses: Int) {
         modifier = GlanceModifier
             .width(56.dp)
             .height(72.dp)
-            .background(ColorProvider(CupOutline))
+            .background(solid(CupOutline))
             .cornerRadius(10.dp)
             .padding(3.dp),
     ) {
@@ -191,7 +194,7 @@ private fun WaterCup(drunkGlasses: Int, goalGlasses: Int) {
                         .fillMaxWidth()
                         .defaultWeight()
                         .padding(vertical = 1.dp)
-                        .background(ColorProvider(if (isFilled) CupFill else Color.Transparent))
+                        .background(solid(if (isFilled) CupFill else Color.Transparent))
                         .cornerRadius(4.dp),
                 ) {}
             }

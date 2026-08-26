@@ -7,6 +7,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.HydrationRecord
+import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.request.AggregateRequest
 import androidx.health.connect.client.time.TimeRangeFilter
 import androidx.health.connect.client.units.Volume
@@ -69,6 +70,7 @@ class HealthConnectManager(private val context: Context) {
             endTime = now,
             endZoneOffset = offset,
             volume = Volume.milliliters(volumeMl.toDouble()),
+            metadata = Metadata.manualEntry(),
         )
         val result = c.insertRecords(listOf(record))
         return result.recordIdsList.firstOrNull()
