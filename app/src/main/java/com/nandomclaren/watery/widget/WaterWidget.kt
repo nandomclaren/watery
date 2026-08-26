@@ -143,8 +143,7 @@ private fun WaterWidgetContent(state: WaterUiState) {
                     modifier = GlanceModifier
                         .size(24.dp)
                         .background(solid(ButtonTrack))
-                        .cornerRadius(12.dp)
-                        .clickable(actionRunCallback<UndoGlassAction>()),
+                        .cornerRadius(12.dp),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
