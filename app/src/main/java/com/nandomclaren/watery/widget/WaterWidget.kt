@@ -127,11 +127,27 @@ private fun WaterWidgetContent(state: WaterUiState) {
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            Box(
+            Row(
                 modifier = GlanceModifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                Spacer(modifier = GlanceModifier.defaultWeight())
+                Box(
+                    modifier = GlanceModifier
+                        .size(24.dp)
+                        .background(solid(ButtonTrack))
+                        .cornerRadius(12.dp)
+                        .clickable(actionRunCallback<UndoGlassAction>()),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = "↺",
+                        style = TextStyle(color = solid(MutedWhite), fontSize = 13.sp),
+                    )
+                }
+                Spacer(modifier = GlanceModifier.width(8.dp))
                 WaterCup(drunkGlasses = state.drunkGlasses, goalGlasses = state.goalGlasses)
+                Spacer(modifier = GlanceModifier.defaultWeight())
             }
 
             Spacer(modifier = GlanceModifier.height(8.dp))
@@ -151,40 +167,6 @@ private fun WaterWidgetContent(state: WaterUiState) {
             }
 
             Spacer(modifier = GlanceModifier.defaultWeight())
-
-            Row(modifier = GlanceModifier.fillMaxWidth()) {
-                Box(
-                    modifier = GlanceModifier
-                        .size(28.dp)
-                        .background(solid(ButtonTrack))
-                        .cornerRadius(14.dp)
-                        .clickable(actionRunCallback<UndoGlassAction>()),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "↺",
-                        style = TextStyle(color = solid(MutedWhite), fontSize = 14.sp),
-                    )
-                }
-                Spacer(modifier = GlanceModifier.defaultWeight())
-                Box(
-                    modifier = GlanceModifier
-                        .size(28.dp)
-                        .background(solid(CupFill))
-                        .cornerRadius(14.dp)
-                        .clickable(actionRunCallback<AddGlassAction>()),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "+",
-                        style = TextStyle(
-                            color = solid(White),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                        ),
-                    )
-                }
-            }
         }
     }
 }

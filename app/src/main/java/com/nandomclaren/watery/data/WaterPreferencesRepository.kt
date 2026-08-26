@@ -76,14 +76,26 @@ class WaterPreferencesRepository(private val context: Context) {
         return state.first()
     }
 
-    suspend fun addGlass(healthConnectManager: HealthConnectManager) {
-        val current = state.first()
-        // The local counter must update no matter what Health Connect does - a
-        // permission check or write failing there (e.g. background restrictions)
-        // must never block the app's own count of glasses drunk today.
+    /**
+     * Bumps the local counter by one glass and returns its size in mL. This is the
+     * fast, always-reliable half of adding a glass - callers that render UI (the
+     * widget in particular) should refresh right after this returns, then call
+     * [syncLastGlassToHealthConnect] afterwards so a slow or failing Health Connect
+     * call never delays the on-screen update.
+     */
+    suspend fun addGlassLocal(): Int {
+        val glassMl = state.first().glassMl
+        context.dataStore.edit { prefs ->
+            prefs[Keys.DRUNK_ML] = (prefs[Keys.DRUNK_ML] ?: 0) + glassMl
+        }
+        return glassMl
+    }
+
+    /** Best-effort mirror of the most recently added glass into Health Connect. */
+    suspend fun syncLastGlassToHealthConnect(healthConnectManager: HealthConnectManager, glassMl: Int) {
         val recordId = try {
             if (healthConnectManager.hasAllPermissions()) {
-                healthConnectManager.insertGlass(current.glassMl)
+                healthConnectManager.insertGlass(glassMl)
             } else {
                 null
             }
@@ -91,7 +103,6 @@ class WaterPreferencesRepository(private val context: Context) {
             null
         }
         context.dataStore.edit { prefs ->
-            prefs[Keys.DRUNK_ML] = (prefs[Keys.DRUNK_ML] ?: 0) + current.glassMl
             if (recordId != null) {
                 prefs[Keys.LAST_RECORD_ID] = recordId
             } else {
@@ -100,16 +111,33 @@ class WaterPreferencesRepository(private val context: Context) {
         }
     }
 
-    suspend fun undoLastGlass(healthConnectManager: HealthConnectManager) {
+    suspend fun addGlass(healthConnectManager: HealthConnectManager) {
+        val glassMl = addGlassLocal()
+        syncLastGlassToHealthConnect(healthConnectManager, glassMl)
+    }
+
+    /** Reverts the local counter by one glass. Fast and always reliable. */
+    suspend fun undoLastGlassLocal(): Boolean {
         val current = state.first()
-        if (current.drunkMl <= 0) return
+        if (current.drunkMl <= 0) return false
+        context.dataStore.edit { prefs ->
+            prefs[Keys.DRUNK_ML] = ((prefs[Keys.DRUNK_ML] ?: 0) - current.glassMl).coerceAtLeast(0)
+        }
+        return true
+    }
+
+    /** Best-effort deletes the last glass's Health Connect record, if any. */
+    suspend fun syncUndoToHealthConnect(healthConnectManager: HealthConnectManager) {
         val lastRecordId = context.dataStore.data.first()[Keys.LAST_RECORD_ID]
         if (lastRecordId != null) {
             healthConnectManager.deleteRecord(lastRecordId)
         }
-        context.dataStore.edit { prefs ->
-            prefs[Keys.DRUNK_ML] = ((prefs[Keys.DRUNK_ML] ?: 0) - current.glassMl).coerceAtLeast(0)
-            prefs.remove(Keys.LAST_RECORD_ID)
+        context.dataStore.edit { prefs -> prefs.remove(Keys.LAST_RECORD_ID) }
+    }
+
+    suspend fun undoLastGlass(healthConnectManager: HealthConnectManager) {
+        if (undoLastGlassLocal()) {
+            syncUndoToHealthConnect(healthConnectManager)
         }
     }
 
