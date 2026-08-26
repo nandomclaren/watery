@@ -78,9 +78,16 @@ class WaterPreferencesRepository(private val context: Context) {
 
     suspend fun addGlass(healthConnectManager: HealthConnectManager) {
         val current = state.first()
-        val recordId = if (healthConnectManager.hasAllPermissions()) {
-            healthConnectManager.insertGlass(current.glassMl)
-        } else {
+        // The local counter must update no matter what Health Connect does - a
+        // permission check or write failing there (e.g. background restrictions)
+        // must never block the app's own count of glasses drunk today.
+        val recordId = try {
+            if (healthConnectManager.hasAllPermissions()) {
+                healthConnectManager.insertGlass(current.glassMl)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
             null
         }
         context.dataStore.edit { prefs ->
