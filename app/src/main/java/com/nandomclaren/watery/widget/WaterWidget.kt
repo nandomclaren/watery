@@ -32,6 +32,8 @@ import androidx.glance.text.TextStyle
 import com.nandomclaren.watery.data.HealthConnectManager
 import com.nandomclaren.watery.data.WaterPreferencesRepository
 import com.nandomclaren.watery.data.WaterUiState
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 private val DarkBackground = Color(0xFF1C1C1E)
@@ -124,6 +126,11 @@ private fun WaterWidgetContent(state: WaterUiState) {
                     )
                 }
             }
+
+            Text(
+                text = "DEBUG render: ${LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))}",
+                style = TextStyle(color = solid(MutedWhite), fontSize = 9.sp),
+            )
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 

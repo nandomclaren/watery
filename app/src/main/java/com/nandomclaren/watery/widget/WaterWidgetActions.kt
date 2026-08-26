@@ -8,6 +8,7 @@ import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.updateAll
 import com.nandomclaren.watery.data.HealthConnectManager
 import com.nandomclaren.watery.data.WaterPreferencesRepository
+import kotlinx.coroutines.flow.first
 
 class AddGlassAction : ActionCallback {
     override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
@@ -16,7 +17,10 @@ class AddGlassAction : ActionCallback {
             // Update the counter and repaint the widget immediately - a slow or
             // failing Health Connect call must never delay what the tap is for.
             val glassMl = repository.addGlassLocal()
+            val newTotal = repository.state.first().drunkMl
+            Toast.makeText(context, "DEBUG: contador local agora = ${newTotal}ml, chamando updateAll...", Toast.LENGTH_SHORT).show()
             WaterWidget().updateAll(context)
+            Toast.makeText(context, "DEBUG: updateAll terminou", Toast.LENGTH_SHORT).show()
             val healthConnectManager = HealthConnectManager(context)
             repository.syncLastGlassToHealthConnect(healthConnectManager, glassMl)
         } catch (e: Exception) {
@@ -30,7 +34,10 @@ class UndoGlassAction : ActionCallback {
         try {
             val repository = WaterPreferencesRepository(context)
             val didUndo = repository.undoLastGlassLocal()
+            val newTotal = repository.state.first().drunkMl
+            Toast.makeText(context, "DEBUG: desfeito=$didUndo, contador local agora = ${newTotal}ml", Toast.LENGTH_SHORT).show()
             WaterWidget().updateAll(context)
+            Toast.makeText(context, "DEBUG: updateAll terminou", Toast.LENGTH_SHORT).show()
             if (didUndo) {
                 val healthConnectManager = HealthConnectManager(context)
                 repository.syncUndoToHealthConnect(healthConnectManager)
