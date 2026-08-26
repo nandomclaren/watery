@@ -43,8 +43,18 @@ class WaterPreferencesRepository(private val context: Context) {
      * Resets the daily counter when the calendar day has changed, then (when Health
      * Connect is available and authorized) refreshes today's total from it, so the
      * widget stays in sync with intake logged from any other Health Connect app.
+     *
+     * Reading from Health Connect requires the app to be in the foreground unless it
+     * holds the (hard-restricted, effectively unobtainable for a sideloaded app)
+     * READ_HEALTH_DATA_IN_BACKGROUND permission, so background callers (the widget,
+     * its actions, the periodic worker) must pass [allowHealthConnectRead] = false and
+     * rely on the local cache, which stays accurate since every glass logged through
+     * this app is written straight to Health Connect either way.
      */
-    suspend fun syncAndGetState(healthConnectManager: HealthConnectManager): WaterUiState {
+    suspend fun syncAndGetState(
+        healthConnectManager: HealthConnectManager,
+        allowHealthConnectRead: Boolean = true,
+    ): WaterUiState {
         val today = LocalDate.now().toString()
         context.dataStore.edit { prefs ->
             if (prefs[Keys.LAST_RESET_DATE] != today) {
@@ -54,7 +64,7 @@ class WaterPreferencesRepository(private val context: Context) {
             }
         }
 
-        if (healthConnectManager.hasAllPermissions()) {
+        if (allowHealthConnectRead && healthConnectManager.hasAllPermissions()) {
             val totalFromHealthConnect = healthConnectManager.readTodayTotalMl()
             if (totalFromHealthConnect != null) {
                 context.dataStore.edit { prefs ->

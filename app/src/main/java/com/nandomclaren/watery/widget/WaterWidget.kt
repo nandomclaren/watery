@@ -51,7 +51,7 @@ class WaterWidget : GlanceAppWidget() {
         val repository = WaterPreferencesRepository(context)
         val healthConnectManager = HealthConnectManager(context)
         val result = try {
-            Result.success(repository.syncAndGetState(healthConnectManager))
+            Result.success(repository.syncAndGetState(healthConnectManager, allowHealthConnectRead = false))
         } catch (e: Exception) {
             Result.failure(e)
         }

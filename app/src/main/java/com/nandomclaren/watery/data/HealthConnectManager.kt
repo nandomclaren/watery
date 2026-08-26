@@ -59,26 +59,34 @@ class HealthConnectManager(private val context: Context) {
         context.startActivity(intent)
     }
 
-    /** Inserts a hydration record and returns its record id for later undo. */
+    /** Inserts a hydration record and returns its record id for later undo, or null on failure. */
     suspend fun insertGlass(volumeMl: Int): String? {
         val c = client ?: return null
-        val now = Instant.now()
-        val offset = ZonedDateTime.now().offset
-        val record = HydrationRecord(
-            startTime = now.minusSeconds(1),
-            startZoneOffset = offset,
-            endTime = now,
-            endZoneOffset = offset,
-            volume = Volume.milliliters(volumeMl.toDouble()),
-            metadata = Metadata.manualEntry(),
-        )
-        val result = c.insertRecords(listOf(record))
-        return result.recordIdsList.firstOrNull()
+        return try {
+            val now = Instant.now()
+            val offset = ZonedDateTime.now().offset
+            val record = HydrationRecord(
+                startTime = now.minusSeconds(1),
+                startZoneOffset = offset,
+                endTime = now,
+                endZoneOffset = offset,
+                volume = Volume.milliliters(volumeMl.toDouble()),
+                metadata = Metadata.manualEntry(),
+            )
+            c.insertRecords(listOf(record)).recordIdsList.firstOrNull()
+        } catch (e: Exception) {
+            null
+        }
     }
 
     suspend fun deleteRecord(recordId: String) {
         val c = client ?: return
-        c.deleteRecords(HydrationRecord::class, recordIdsList = listOf(recordId), clientRecordIdsList = emptyList())
+        try {
+            c.deleteRecords(HydrationRecord::class, recordIdsList = listOf(recordId), clientRecordIdsList = emptyList())
+        } catch (e: Exception) {
+            // Local counter is the source of truth for the undo itself; a failed
+            // Health Connect delete just means that record lingers there.
+        }
     }
 
     /** Total hydration volume, in mL, logged today (local calendar day) in Health Connect. */
