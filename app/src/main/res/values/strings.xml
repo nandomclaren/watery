@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Watery</string>
+    <string name="widget_display_name">Água (Watery)</string>
+    <string name="widget_description">Acompanhe sua meta diária de água, sincronizada com o Health Connect.</string>
+</resources>
