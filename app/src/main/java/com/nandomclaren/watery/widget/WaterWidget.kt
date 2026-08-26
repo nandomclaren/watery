@@ -43,7 +43,7 @@ private val MutedWhite = Color(0xB3FFFFFF)
 private val ButtonTrack = Color(0x1FFFFFFF)
 
 /** This widget always renders with a fixed dark palette, so day and night resolve the same. */
-private fun solid(color: Color): ColorProvider = ColorProvider(day = color, night = color)
+private fun solid(color: Color) = ColorProvider(day = color, night = color)
 
 class WaterWidget : GlanceAppWidget() {
 
