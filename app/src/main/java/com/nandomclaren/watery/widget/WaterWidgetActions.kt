@@ -33,18 +33,3 @@ class AddGlassAction : ActionCallback {
     }
 }
 
-class UndoGlassAction : ActionCallback {
-    override suspend fun onAction(context: Context, glanceId: GlanceId, parameters: ActionParameters) {
-        try {
-            val repository = WaterPreferencesRepository(context)
-            val didUndo = repository.undoLastGlassLocal()
-            WaterWidget().updateAll(context)
-            if (didUndo) {
-                val healthConnectManager = HealthConnectManager(context)
-                repository.syncUndoToHealthConnect(healthConnectManager)
-            }
-        } catch (e: Exception) {
-            showToast(context, "Erro ao desfazer: ${e::class.simpleName}: ${e.message}")
-        }
-    }
-}

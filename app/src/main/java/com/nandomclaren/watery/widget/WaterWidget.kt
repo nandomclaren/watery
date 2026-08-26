@@ -39,8 +39,6 @@ private val BadgeRed = Color(0xFFE0342F)
 private val CupOutline = Color(0x33FFFFFF)
 private val CupFill = Color(0xFF2FA8E0)
 private val White = Color(0xFFFFFFFF)
-private val MutedWhite = Color(0xB3FFFFFF)
-private val ButtonTrack = Color(0x1FFFFFFF)
 
 /** This widget always renders with a fixed dark palette, so day and night resolve the same. */
 private fun solid(color: Color) = ColorProvider(day = color, night = color)
@@ -127,27 +125,11 @@ private fun WaterWidgetContent(state: WaterUiState) {
 
             Spacer(modifier = GlanceModifier.defaultWeight())
 
-            Row(
+            Box(
                 modifier = GlanceModifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                contentAlignment = Alignment.Center,
             ) {
-                Spacer(modifier = GlanceModifier.defaultWeight())
-                Box(
-                    modifier = GlanceModifier
-                        .size(24.dp)
-                        .background(solid(ButtonTrack))
-                        .cornerRadius(12.dp)
-                        .clickable(actionRunCallback<UndoGlassAction>()),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        text = "↺",
-                        style = TextStyle(color = solid(MutedWhite), fontSize = 13.sp),
-                    )
-                }
-                Spacer(modifier = GlanceModifier.width(8.dp))
                 WaterCup(drunkGlasses = state.drunkGlasses, goalGlasses = state.goalGlasses)
-                Spacer(modifier = GlanceModifier.defaultWeight())
             }
 
             Spacer(modifier = GlanceModifier.height(8.dp))
